@@ -1,0 +1,109 @@
+---
+title: "TidyTemplate"
+date: 2020-11-10
+output: html_output
+---
+
+# TidyTuesday
+
+Join the R4DS Online Learning Community in the weekly #TidyTuesday event!
+Every week we post a raw dataset, a chart or article related to that dataset, and ask you to explore the data.
+While the dataset will be “tamed”, it will not always be tidy! As such you might need to apply various R for Data Science techniques to wrangle the data into a true tidy format.
+The goal of TidyTuesday is to apply your R skills, get feedback, explore other’s work, and connect with the greater #RStats community!
+As such we encourage everyone of all skills to participate!
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(tidytuesdayR)
+
+```
+
+# Load the weekly Data
+
+Dowload the weekly data and make available in the `tt` object.
+
+```{r Load}
+
+tt <- tt_load("2020-11-10")
+
+```
+
+
+# Readme
+
+Take a look at the readme for the weekly data to get insight on the dataset.
+This includes a data dictionary, source, and a link to an article on the data.
+
+```{r Readme, eval = interactive()}
+
+tt
+
+```
+
+
+# Glimpse Data
+
+Take an initial look at the format of the data available.
+
+```{r Glimpse}
+
+tt %>% 
+  map(glimpse)
+
+```
+
+# Wrangle
+
+Explore the data and process it into a nice format for plotting! Access each dataset by name by using a dollarsign after the `tt` object and then the name of the data set.
+
+```{r Wrangle}
+mobile_df <- tt$mobile
+
+mobile_df %>%
+  filter(year %in% c(2010, 2017)) %>%
+  select(entity, year, mobile_subs) %>% 
+  pivot_wider(names_from = year, values_from = mobile_subs) %>%
+  drop_na() %>% 
+  mutate(diff = `2017`-`2010`) %>% 
+  arrange(diff)
+
+```
+
+
+# Visualize
+
+Using your processed dataset, create your unique visualization.
+
+```{r Visualize}
+library(gghighlight)
+library(ggthemes)
+
+mobile_df %>% 
+  ggplot(aes(x=year, y=mobile_subs, group=code, color = code))+
+  geom_line(size = 1)+
+  gghighlight(entity %in% c("Denmark", "Germany", "Hong Kong", "Macao", "Cuba"), unhighlighted_params = list(size = .2))+
+  theme_solarized_2()+
+  labs(x="Year",
+       y="Mobile subscriptions per 100 people",
+       title="Number of mobile subscriptions per 100 people across the world",
+       subtitle = "Densly populated areas like Hong Kong or Macao lead the pack,\nwhile Cuba is catching up on European countries like Denmark or Germany",
+       caption = "Data: TidyTuesday 46-2020\nVisualization: Lukas Steger")+
+  theme(title = element_text(color = "black"))
+  
+```
+
+# Save Image
+
+Save your image for sharing. Be sure to use the `#TidyTuesday` hashtag in your post on twitter! 
+
+```{r}
+
+# This will save your most recent plot
+ggsave(
+  filename = "2020-46/tt_2020_46.png",
+  device = "png")
+
+```
